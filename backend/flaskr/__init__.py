@@ -223,28 +223,28 @@ def create_app(test_config=None):
     def play_quiz_question():
 
         # process the request data and get the values
-        data = request.get_json()
-        previous_questions = data.get('previous_questions')
-        category = data.get('quiz_category')
+        body = request.get_json()
+        previous_questions = body.get('previous_questions') 
+        category = body.get('quiz_category')
 
-        # return 404 if category or previous_questions is empty
+        # return 400 if category or previous_questions is empty
         if ((category is None) or (previous_questions is None)):
             abort(400)
 
-        if (category['id'] == 0):
-            questions = Question.query.all()
+        if not(category['id'] == 0):
+            questions = Question.query.filter_by(category=category['id']).all()
         else:
-            questions = Question.query.filter_by(
-                category=category['id']).all()
+            questions = Question.query.all()
+            
 
         # A random question generator method
         def gen_random_question():
-            return questions[random.randint(0, len(questions)-1)]
+            return random.choice(questions)
 
         # get random question for the next question
         next_question = gen_random_question()
 
-        # Boolean to check if question is in previous question
+        # check if question is in previous question
         played = True
 
         while played:
